@@ -3,8 +3,7 @@
 export default function({types: t}) {
   const defaultPrefix = 'data-qa';
   let prefix;
-  let filenameAttr;
-  let nodeNameAttr;
+  let componentAttr;
 
   const visitor = {
     Program(path, state) {
@@ -13,28 +12,19 @@ export default function({types: t}) {
       } else {
         prefix = defaultPrefix;
       }
-      filenameAttr = `${prefix}-file`;
-      nodeNameAttr = `${prefix}-node`;
+      componentAttr = `${prefix}-component`;
     },
     JSXOpeningElement(path, state) {
       const attributes = path.container.openingElement.attributes;
-
       const newAttributes = [];
 
-      if (path.container && path.container.openingElement &&
-        path.container.openingElement.name &&
-        path.container.openingElement.name.name) {
-        newAttributes.push(t.jSXAttribute(
-          t.jSXIdentifier(nodeNameAttr),
-          t.stringLiteral(path.container.openingElement.name.name))
-        );
-      }
+      if (state.file && state.file.opts) {
+        const source = state.file.opts.sourceFileName.replace(/\/index.jsx$/,'')
 
-      if (state.file && state.file.opts && state.file.opts.basename) {
         newAttributes.push(t.jSXAttribute(
-          t.jSXIdentifier(filenameAttr),
-          t.stringLiteral(state.file.opts.basename))
-        );
+          t.jSXIdentifier(componentAttr),
+          t.stringLiteral(source)
+        ));
       }
 
       attributes.push(...newAttributes);
